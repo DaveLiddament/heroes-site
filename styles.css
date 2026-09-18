@@ -65,7 +65,6 @@ section { padding-top: 72px; }
 
 /* Masthead */
 .masthead { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 16px 0; border-bottom: 2px solid var(--ink); font-family: var(--mono); font-size: 12px; }
-.masthead .long { display: none; }
 
 /* Hero */
 .hero { padding-top: 36px; display: flex; flex-direction: column; gap: 28px; }
@@ -132,7 +131,7 @@ figcaption { font-family: var(--mono); font-size: 12px; }
 .numbers thead th i { display: inline-block; width: 10px; height: 10px; margin-right: 4px; background: var(--c); }
 
 /*
-  Photo swapping, shared by the odd ones and the gallery. No JavaScript.
+  Photo swapping in the gallery. No JavaScript.
 
   Inside a .swap, each entry is three siblings: a hidden radio button
   (.swap-input), the entry's photo (.swap-figure) and its row (.swap-label, the
@@ -162,13 +161,11 @@ figcaption { font-family: var(--mono); font-size: 12px; }
 .swap:has(.swap-input.is-default:checked):has(.swap-label:target) .swap-input:checked + .swap-figure + .swap-label { background: none; }
 .swap:has(.swap-input.is-default:checked) .swap-label:target { background: color-mix(in srgb, var(--lilac) 28%, transparent); }
 
-/* Oddities */
-.odd { display: flex; flex-direction: column; gap: 18px; }
-.odd-entries { border-bottom: 2px solid var(--ink); }
-.odd-entry, .odd-fact { display: flex; flex-direction: column; gap: 4px; padding: 14px 10px; margin: 0 -10px; border-top: 1px solid var(--rule); }
-.odd-entry .when, .odd-fact .when { font-family: var(--mono); font-size: 12px; }
-.odd-entry.lead { border-top: 0; font-size: 17px; }
-.odd-entry.lead .when { display: none; } /* the photo's caption already carries the date */
+/* Oddities: a plain list. The photos live in "Every photo". */
+.odd-entries { border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+.odd-entry { display: flex; flex-direction: column; gap: 4px; padding: 14px 0; }
+.odd-entry + .odd-entry { border-top: 1px solid var(--rule); }
+.odd-entry .when { font-family: var(--mono); font-size: 12px; }
 
 /* Every photo: a row per tub. */
 .gallery { border-bottom: 2px solid var(--ink); }
@@ -193,8 +190,6 @@ footer .by { font-family: var(--mono); font-size: 12px; }
   h2 { font-size: clamp(44px, 5vw, 64px); }
   section { padding-top: 120px; }
   .masthead { padding: 22px 0; font-size: 14px; }
-  .masthead .long { display: inline; }
-  .masthead .short { display: none; }
   figcaption { font-size: 14px; }
 
   .hero { padding-top: 72px; gap: 48px; }
@@ -216,9 +211,7 @@ footer .by { font-family: var(--mono); font-size: 12px; }
   .count-notes p { flex: 1 1 0; }
   #count .stack { gap: 36px; }
 
-  .typical { display: flex; gap: 72px; align-items: flex-start; }
-  .typical .intro { width: 340px; flex-shrink: 0; }
-  .typical .table { flex-grow: 1; }
+  #typical .table { max-width: 860px; }
   .lineup { border-top: 0; }
   .lineup-head { display: grid; grid-template-columns: 150px 1fr 60px 70px; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); font-family: var(--mono); font-size: 13px; text-align: right; }
   .lu-row { grid-template-columns: 150px 1fr 60px 70px; grid-template-areas: "name icons avg range"; gap: 16px; align-items: center; }
@@ -251,13 +244,9 @@ footer .by { font-family: var(--mono); font-size: 12px; }
   .swap:has(.swap-input.is-default:checked):has(.swap-label:target) .swap-input:checked + .swap-figure { display: flex; opacity: 0; pointer-events: none; }
   .swap:has(.swap-input.is-default:checked) .swap-figure:has(+ .swap-label:target) { opacity: 1; pointer-events: auto; }
 
-  /* The odd ones: photo column on the left, entries on the right. */
-  .odd { position: relative; display: block; padding-left: 484px; min-height: 370px; }
-  .odd > h2 { margin-bottom: 28px; }
-  .odd-entry, .odd-fact { flex-direction: row; gap: 24px; padding: 16px 10px; }
-  .odd-entry .when, .odd-fact .when { width: 130px; flex-shrink: 0; font-size: 14px; padding-top: 3px; }
-  .odd-entry.lead { flex-direction: column; gap: 0; padding: 12px 10px 28px; font-size: 19px; }
-  .odd .swap-figure { left: 0; width: 420px; }
+  .odd-entries { max-width: 860px; }
+  .odd-entry { flex-direction: row; gap: 24px; padding: 16px 0; }
+  .odd-entry .when { width: 130px; flex-shrink: 0; font-size: 14px; padding-top: 3px; }
 
   /* Every photo: the list down the left, the viewer on the right. */
   .gallery { position: relative; min-height: 580px; border-bottom: 0; }

@@ -76,7 +76,7 @@ section { padding-top: 72px; }
 figure { margin: 0; display: flex; flex-direction: column; gap: 8px; }
 figcaption { font-family: var(--mono); font-size: 12px; }
 .photo { width: 100%; object-fit: cover; }
-.hero .photo { height: 226px; }
+.hero .photo { aspect-ratio: 4 / 3; }
 
 /* Totals chart. --per is the height of one chocolate; a notch every ten. */
 .totals { display: flex; flex-direction: column; gap: 6px; --per: calc(218px / var(--max)); }
@@ -131,28 +131,50 @@ figcaption { font-family: var(--mono); font-size: 12px; }
 .numbers thead th { border-bottom: 2px solid var(--ink); font-weight: 500; vertical-align: bottom; }
 .numbers thead th i { display: inline-block; width: 10px; height: 10px; margin-right: 4px; background: var(--c); }
 
-/* Oddities. Every entry carries its own photo; the first one shows by default. */
+/*
+  Photo swapping, shared by the odd ones and the gallery. No JavaScript.
+
+  Inside a .swap, each entry is three siblings: a hidden radio button
+  (.swap-input), the entry's photo (.swap-figure) and its row (.swap-label, the
+  radio's <label>). Tapping, clicking or arrow-keying to a row selects its
+  radio, and the selected radio's photo is the one that shows. The choice
+  persists, which is what makes it work on a touch screen, where there is no
+  hover. (Desktop adds a hover preview on top: see the media query below.)
+
+  On a phone the photos share a viewer that sticks to the top of the screen
+  while the rows scroll beneath it, so the swap is always in view.
+*/
+.swap { display: flex; flex-direction: column; position: relative; }
+.swap-input { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; } /* hidden, but still focusable */
+.swap-figure { display: none; order: -1; position: sticky; top: 0; z-index: 1; padding: 8px 0 10px; background: var(--bg); border-bottom: 1px solid var(--rule); }
+.swap-input:checked + .swap-figure { display: flex; }
+/* Every tub photo is 4:3 landscape (the data validator insists), so the viewer never changes height. */
+.swap-figure .photo { aspect-ratio: 4 / 3; }
+.swap-label { cursor: pointer; scroll-margin-top: calc(75vw + 56px); }
+.swap-input:checked + .swap-figure + .swap-label { background: color-mix(in srgb, var(--lilac) 28%, transparent); }
+.swap-input:focus-visible + .swap-figure + .swap-label { outline: 2px solid var(--ink); outline-offset: -2px; }
+/*
+  A #photo-N link (from "Every tub I've counted") shows that tub's photo, until
+  the reader picks a row of their own: it only outranks the untouched default.
+*/
+.swap:has(.swap-input.is-default:checked):has(.swap-label:target) .swap-input:checked + .swap-figure { display: none; }
+.swap:has(.swap-input.is-default:checked) .swap-figure:has(+ .swap-label:target) { display: flex; }
+.swap:has(.swap-input.is-default:checked):has(.swap-label:target) .swap-input:checked + .swap-figure + .swap-label { background: none; }
+.swap:has(.swap-input.is-default:checked) .swap-label:target { background: color-mix(in srgb, var(--lilac) 28%, transparent); }
+
+/* Oddities */
 .odd { display: flex; flex-direction: column; gap: 18px; }
 .odd-entries { border-bottom: 2px solid var(--ink); }
-.odd-entry, .odd-fact { display: flex; flex-direction: column; gap: 4px; padding: 14px 0; border-top: 1px solid var(--rule); }
+.odd-entry, .odd-fact { display: flex; flex-direction: column; gap: 4px; padding: 14px 10px; margin: 0 -10px; border-top: 1px solid var(--rule); }
 .odd-entry .when, .odd-fact .when { font-family: var(--mono); font-size: 12px; }
-.odd-entry .see { font-family: var(--mono); font-size: 12px; white-space: nowrap; }
-.odd-entry figure { display: none; }
-.odd-entry.lead { border-top: 0; padding-top: 0; gap: 18px; font-size: 17px; }
+.odd-entry.lead { border-top: 0; font-size: 17px; }
 .odd-entry.lead .when { display: none; } /* the photo's caption already carries the date */
-.odd-entry.lead figure { display: flex; }
 
-/*
-  Every photo. On a phone: a grid of thumbnails, each captioned by its row's
-  label. On a desktop it becomes a list with a viewer beside it (see below).
-*/
-.gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 10px; align-items: start; }
-.shot { display: flex; flex-direction: column; gap: 8px; scroll-margin-top: 16px; }
-.shot figure { order: 0; }
-.shot figcaption { display: none; } /* the label says the same thing */
-.shot-label { order: 1; font-family: var(--mono); font-size: 12px; color: var(--ink); text-decoration: none; }
-.shot-label:hover, .shot-label:focus-visible { text-decoration: underline; }
-.shot:target .shot-label { color: var(--accent); font-weight: 500; }
+/* Every photo: a row per tub. */
+.gallery { border-bottom: 2px solid var(--ink); }
+.shot-label { display: block; padding: 8px 12px; border-top: 1px solid var(--rule); font-family: var(--mono); font-size: 12px; }
+.gallery .swap-input:checked + .swap-figure + .shot-label { font-weight: 500; }
+.gallery figcaption { display: none; } /* the selected row says the same thing */
 
 /* 404: the empty wrappers from the social card. */
 .notfound .empties { display: flex; flex-wrap: wrap; gap: 10px; color: var(--lilac); }
@@ -178,10 +200,8 @@ footer .by { font-family: var(--mono); font-size: 12px; }
   .hero { padding-top: 72px; gap: 48px; }
   .hero-head { gap: 22px; }
   .standfirst { font-size: 17px; }
-  .hero-body { grid-template-columns: 480fr 272fr minmax(260px, 1fr); gap: 40px; align-items: start; }
+  .hero-body { grid-template-columns: 1fr 1fr minmax(240px, 0.8fr); gap: 40px; align-items: start; }
   .hero-text { grid-column: auto; margin-top: 0; font-size: 19px; gap: 18px; padding-top: 4px; }
-  .hero .photo { height: auto; aspect-ratio: 480 / 360; }
-  .hero figure + figure .photo { aspect-ratio: 272 / 360; }
 
   .totals { --per: calc(312px / var(--max)); gap: 10px; }
   .totals .bars, .totals .labels, .totals .weights { gap: 16px; }
@@ -221,41 +241,29 @@ footer .by { font-family: var(--mono); font-size: 12px; }
   .numbers { font-size: 13px; }
 
   /*
-    Photo swapping, shared by the odd ones and the gallery. Every .swap-item
-    carries its own figure, lifted out into a viewer column; exactly one shows.
-    Which one, in order of precedence: the item under the mouse, else the item
-    with keyboard focus, else the item a #photo-N link points at, else the
-    default. No JavaScript. Touch screens have no hover, so below 700px none of
-    this applies.
+    Desktop: each photo is lifted into a viewer column beside its rows, and all
+    of them are kept loaded so that swapping is instant.
   */
-  .swap-item figure { display: flex; position: absolute; top: 0; opacity: 0; pointer-events: none; transition: opacity 120ms ease-in; }
-  .swap-item.is-default figure, .swap-item:target figure, .swap-item:hover figure, .swap-item:focus-within figure { opacity: 1; pointer-events: auto; }
-  .swap:has(.swap-item:hover) .swap-item:not(:hover) figure,
-  .swap:not(:has(.swap-item:hover)):has(.swap-item:focus-within) .swap-item:not(:focus-within) figure,
-  .swap:not(:has(.swap-item:hover, .swap-item:focus-within)):has(.swap-item:target) .swap-item:not(:target) figure { opacity: 0; pointer-events: none; }
+  .swap { display: block; position: static; }
+  .swap-figure { display: flex; position: absolute; top: 0; z-index: auto; padding: 0; border: 0; background: none; opacity: 0; pointer-events: none; transition: opacity 120ms ease-in; }
+  .swap-input:checked + .swap-figure { opacity: 1; pointer-events: auto; }
+  .swap-label { scroll-margin-top: 24px; }
+  .swap:has(.swap-input.is-default:checked):has(.swap-label:target) .swap-input:checked + .swap-figure { display: flex; opacity: 0; pointer-events: none; }
+  .swap:has(.swap-input.is-default:checked) .swap-figure:has(+ .swap-label:target) { opacity: 1; pointer-events: auto; }
 
   /* The odd ones: photo column on the left, entries on the right. */
-  .odd { position: relative; display: block; padding-left: 484px; min-height: 610px; }
+  .odd { position: relative; display: block; padding-left: 484px; min-height: 370px; }
   .odd > h2 { margin-bottom: 28px; }
-  .odd-entry, .odd-fact { flex-direction: row; gap: 24px; padding: 16px 0; }
+  .odd-entry, .odd-fact { flex-direction: row; gap: 24px; padding: 16px 10px; }
   .odd-entry .when, .odd-fact .when { width: 130px; flex-shrink: 0; font-size: 14px; padding-top: 3px; }
-  .odd-entry.lead { flex-direction: column; gap: 0; padding: 0 0 28px; font-size: 19px; }
-  .odd-entry figure { left: 0; width: 420px; }
-  .odd-entry:not(.lead):hover, .odd-entry:not(.lead):focus-within { background: color-mix(in srgb, var(--lilac) 18%, transparent); }
+  .odd-entry.lead { flex-direction: column; gap: 0; padding: 12px 10px 28px; font-size: 19px; }
+  .odd .swap-figure { left: 0; width: 420px; }
 
   /* Every photo: the list down the left, the viewer on the right. */
-  .gallery { position: relative; display: block; min-height: 700px; }
-  .shot { display: block; width: 400px; border-top: 1px solid var(--rule); scroll-margin-top: 24px; }
-  .shot:last-child { border-bottom: 2px solid var(--ink); }
-  .shot-label { display: block; padding: 8px 12px; font-size: 14px; }
-  .shot-label:hover, .shot-label:focus-visible { text-decoration: none; }
-  .shot figure { left: 464px; right: 0; }
-  .shot .photo { width: 100%; max-height: 700px; object-fit: contain; object-position: left top; }
-  /* The row whose photo is showing: same precedence as the swap above. */
-  .shot:hover .shot-label,
-  .gallery:not(:has(.shot:hover)) .shot:focus-within .shot-label,
-  .gallery:not(:has(.shot:hover, .shot:focus-within)) .shot:target .shot-label,
-  .gallery:not(:has(.shot:hover, .shot:focus-within, .shot:target)) .shot.is-default .shot-label { background: color-mix(in srgb, var(--lilac) 28%, transparent); color: var(--ink); font-weight: 500; }
+  .gallery { position: relative; min-height: 580px; border-bottom: 0; }
+  .shot-label { width: 400px; font-size: 14px; }
+  .shot-label:last-of-type { border-bottom: 2px solid var(--ink); }
+  .gallery .swap-figure { left: 464px; right: 0; }
 
   .notfound .empties { gap: 16px; }
   .notfound .empties svg { width: 88px; height: 48px; }
@@ -265,7 +273,18 @@ footer .by { font-family: var(--mono); font-size: 12px; }
   footer .by { font-size: 14px; }
 }
 
+/*
+  Hover previews another row's photo without changing the selection. Only where
+  hovering is real: on a touch screen a tap would otherwise leave a "stuck"
+  hover fighting the row that was just selected.
+*/
+@media (min-width: 700px) and (hover: hover) {
+  .swap .swap-figure:has(+ .swap-label:hover) { opacity: 1; pointer-events: auto; }
+  .swap:has(.swap-label:hover) .swap-figure:not(:has(+ .swap-label:hover)) { opacity: 0; pointer-events: none; }
+  .swap-label:hover { background: color-mix(in srgb, var(--lilac) 18%, transparent); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .swap-item figure { transition: none; }
+  .swap-figure { transition: none; }
 }

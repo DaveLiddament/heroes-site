@@ -1,0 +1,269 @@
+/*
+  Ported from design/index.html ("Heroes census", desktop 1280 / mobile 390).
+  One responsive page; the breakpoint at 700px switches between the two layouts.
+
+  Every URL is relative: the site is hosted under a sub-path. No JavaScript:
+  the charts are HTML sized by the --n (a count) and --max (the scale) custom
+  properties that the templates print.
+*/
+
+/* Unmodified originals, self-hosted: see fonts/README.md for the licence reasoning. */
+@font-face { font-family: 'Lilita One'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/LilitaOne-Regular.ttf') format('truetype'); }
+@font-face { font-family: 'IBM Plex Sans'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/IBMPlexSans-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-weight: 600; font-style: normal; font-display: swap; src: url('fonts/IBMPlexSans-SemiBold.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/IBMPlexMono-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 500; font-style: normal; font-display: swap; src: url('fonts/IBMPlexMono-Medium.woff2') format('woff2'); }
+
+:root {
+  --bg: #EFE4D2;        /* carpet oatmeal */
+  --ink: #231532;       /* deep wrapper purple */
+  --accent: #5B2A86;    /* wrapper purple */
+  --lilac: #A77BCA;     /* off-season tubs */
+  --rule: #CDBFA8;
+  --display: 'Lilita One', sans-serif;
+  --body: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --gutter: 20px;
+}
+
+/*
+  One colour per chocolate, in line-up (= stacking) order. Validated as a
+  categorical palette against --bg: every neighbouring pair is separable with
+  full colour vision and under protan/deutan/tritan simulation. Four values were
+  nudged from the design to get there:
+    Dairy Milk #5B2A86 -> #65319A    Eclair #8C6239 -> #7E4300
+    Creme Egg  #2E9C8F -> #23A08A    Fudge  #3F7FC1 -> #3568B8
+  Yellow, orange, teal and lilac are still under 3:1 against the oatmeal, which
+  is why the chart ships with a legend, tooltips and a table of the numbers.
+  Re-validate (dataviz skill, validate_palette.js) before changing any of these.
+*/
+.t-twirl        { --c: #E0A800; }
+.t-dairy-milk   { --c: #65319A; }
+.t-wispa        { --c: #D23A4B; }
+.t-eclair       { --c: #7E4300; }
+.t-caramel      { --c: #E88A2E; }
+.t-creme-egg    { --c: #23A08A; }
+.t-fudge        { --c: #3568B8; }
+.t-crunchie     { --c: #2F7D4F; }
+.t-dinky-decker { --c: #A77BCA; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--bg); scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+a { color: var(--accent); }
+a:hover { color: var(--ink); }
+img { display: block; max-width: 100%; height: auto; }
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 var(--gutter); }
+.mono { font-family: var(--mono); }
+h1, h2 { font-family: var(--display); font-weight: 400; margin: 0; line-height: 1; }
+h1 { font-size: 52px; line-height: 0.95; }
+h1 span { color: var(--accent); }
+h2 { font-size: 38px; }
+p { margin: 0; }
+section { padding-top: 72px; }
+.stack { display: flex; flex-direction: column; gap: 18px; }
+
+/* Masthead */
+.masthead { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 16px 0; border-bottom: 2px solid var(--ink); font-family: var(--mono); font-size: 12px; }
+.masthead b { font-weight: 500; }
+.masthead .long { display: none; }
+
+/* Hero */
+.hero { padding-top: 36px; display: flex; flex-direction: column; gap: 28px; }
+.hero-head { display: flex; flex-direction: column; gap: 14px; }
+.standfirst { font-family: var(--mono); font-size: 14px; }
+.hero-body { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hero-text { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 16px; font-size: 17px; margin-top: 18px; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+figcaption { font-family: var(--mono); font-size: 12px; }
+.photo { width: 100%; object-fit: cover; }
+.hero .photo { height: 226px; }
+
+/* Totals chart. --per is the height of one chocolate; a notch every ten. */
+.totals { display: flex; flex-direction: column; gap: 6px; --per: calc(218px / var(--max)); }
+.totals .bars, .totals .labels, .totals .weights { display: flex; gap: 4px; }
+.totals .bars { height: 250px; align-items: flex-end; border-bottom: 2px solid var(--ink); }
+.totals .col { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; }
+.totals .num { font-family: var(--mono); font-size: 10px; }
+.totals .bar { width: 100%; height: calc(var(--n) * var(--per)); background: repeating-linear-gradient(to top, var(--c) 0 calc(var(--per) * 10 - 2px), var(--bg) calc(var(--per) * 10 - 2px) calc(var(--per) * 10)); }
+.totals .bar.xmas { --c: var(--accent); }
+.totals .bar.midyear { --c: var(--lilac); }
+/* min-width: 0 keeps every label exactly as wide as its bar, however many tubs there are. */
+.totals .labels > span { flex: 1 1 0; min-width: 0; display: flex; justify-content: center; white-space: nowrap; text-align: center; font-family: var(--mono); font-size: 10px; line-height: 1.35; }
+.totals .labels .full { display: none; }
+.totals .weights { margin-top: 4px; font-family: var(--mono); font-size: 11px; }
+.totals .weights div { flex-basis: 0; border-top: 2px solid var(--ink); padding-top: 4px; text-align: center; }
+.totals .weights .current { border-color: var(--accent); color: var(--accent); }
+.totals .weights .tub { display: none; }
+.count-notes { display: flex; flex-direction: column; gap: 18px; }
+
+/* Typical tub pictogram */
+.lineup { border-top: 2px solid var(--ink); }
+.lineup-head { display: none; }
+.lu-row { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "name stats" "icons icons"; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.lu-name { grid-area: name; font-weight: 600; }
+.lu-stats { grid-area: stats; font-family: var(--mono); font-size: 13px; }
+.lu-avg, .lu-range { font-family: var(--mono); }
+.lu-icons { grid-area: icons; display: flex; flex-wrap: wrap; gap: 4px; }
+.lu-icons svg { width: 30px; height: 16px; fill: var(--c); }
+.lu-avg-col, .lu-range-col { display: none; }
+
+/* Every tub, stacked */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; background: var(--c); }
+.tubs { display: flex; flex-direction: column; gap: 12px; }
+.tub { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "date total" "bar bar"; gap: 4px; font-family: var(--mono); font-size: 12px; }
+.tub .date { grid-area: date; color: var(--ink); text-decoration: none; }
+.tub .date:hover, .tub .date:focus-visible { text-decoration: underline; }
+.tub .total { grid-area: total; font-weight: 500; }
+.tub .barline { grid-area: bar; }
+.tub .barline .t2 { display: none; }
+.tub .segs { display: flex; gap: 2px; height: 16px; width: calc(var(--n) / var(--max) * 100%); }
+.tub .segs div { flex: var(--n) 1 0; background: var(--c); }
+
+/* The numbers behind the chart: identity must never rest on colour alone. */
+.numbers { font-family: var(--mono); font-size: 12px; }
+.numbers summary { cursor: pointer; padding: 8px 0; }
+.numbers .scroll { overflow-x: auto; }
+.numbers table { border-collapse: collapse; width: 100%; min-width: 760px; }
+.numbers th, .numbers td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+.numbers th:first-child, .numbers td:first-child { text-align: left; }
+.numbers thead th { border-bottom: 2px solid var(--ink); font-weight: 500; vertical-align: bottom; }
+.numbers thead th i { display: inline-block; width: 10px; height: 10px; margin-right: 4px; background: var(--c); }
+
+/* Oddities. Every entry carries its own photo; the first one shows by default. */
+.odd { display: flex; flex-direction: column; gap: 18px; }
+.odd-entries { border-bottom: 2px solid var(--ink); }
+.odd-entry, .odd-fact { display: flex; flex-direction: column; gap: 4px; padding: 14px 0; border-top: 1px solid var(--rule); }
+.odd-entry .when, .odd-fact .when { font-family: var(--mono); font-size: 12px; }
+.odd-entry .see { font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+.odd-entry figure { display: none; }
+.odd-entry.lead { border-top: 0; padding-top: 0; gap: 18px; font-size: 17px; }
+.odd-entry.lead .when { display: none; } /* the photo's caption already carries the date */
+.odd-entry.lead figure { display: flex; }
+
+/*
+  Every photo. On a phone: a grid of thumbnails, each captioned by its row's
+  label. On a desktop it becomes a list with a viewer beside it (see below).
+*/
+.gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 10px; align-items: start; }
+.shot { display: flex; flex-direction: column; gap: 8px; scroll-margin-top: 16px; }
+.shot figure { order: 0; }
+.shot figcaption { display: none; } /* the label says the same thing */
+.shot-label { order: 1; font-family: var(--mono); font-size: 12px; color: var(--ink); text-decoration: none; }
+.shot-label:hover, .shot-label:focus-visible { text-decoration: underline; }
+.shot:target .shot-label { color: var(--accent); font-weight: 500; }
+
+/* Footer */
+footer { margin-top: 96px; padding: 32px 0 40px; border-top: 2px solid var(--ink); display: flex; flex-direction: column; gap: 12px; }
+footer p { font-size: 17px; }
+footer .repo { font-family: var(--mono); font-size: 13px; padding: 12px 0; }
+footer .by { font-family: var(--mono); font-size: 12px; }
+
+/* ---------- Desktop ---------- */
+@media (min-width: 700px) {
+  :root { --gutter: 72px; }
+  body { font-size: 17px; }
+  h1 { font-size: clamp(64px, 8.75vw, 112px); line-height: 0.92; letter-spacing: -1px; max-width: 1080px; }
+  h2 { font-size: clamp(44px, 5vw, 64px); }
+  section { padding-top: 120px; }
+  .masthead { padding: 22px 0; font-size: 14px; }
+  .masthead .long { display: inline; }
+  .masthead .short { display: none; }
+  figcaption { font-size: 14px; }
+
+  .hero { padding-top: 72px; gap: 48px; }
+  .hero-head { gap: 22px; }
+  .standfirst { font-size: 17px; }
+  .hero-body { grid-template-columns: 480fr 272fr minmax(260px, 1fr); gap: 40px; align-items: start; }
+  .hero-text { grid-column: auto; margin-top: 0; font-size: 19px; gap: 18px; padding-top: 4px; }
+  .hero .photo { height: auto; aspect-ratio: 480 / 360; }
+  .hero figure + figure .photo { aspect-ratio: 272 / 360; }
+
+  .count-head { display: flex; flex-direction: row; justify-content: space-between; align-items: flex-end; gap: 48px; }
+  .count-head p { width: 360px; flex-shrink: 0; font-size: 16px; line-height: 1.5; }
+  .totals { --per: calc(312px / var(--max)); gap: 10px; }
+  .totals .bars, .totals .labels, .totals .weights { gap: 16px; }
+  .totals .bars { height: 350px; }
+  .totals .num { font-size: 15px; font-weight: 500; }
+  .totals .labels > span { font-size: 12px; }
+  .totals .labels .yy { display: none; }
+  .totals .labels .full { display: inline; }
+  .totals .weights { font-size: 13px; margin-top: 6px; }
+  .totals .weights .tub { display: inline; }
+  .count-notes { flex-direction: row; gap: 48px; max-width: 1000px; }
+  .count-notes p { flex: 1 1 0; }
+  #count .stack { gap: 36px; }
+
+  .typical { display: flex; gap: 72px; align-items: flex-start; }
+  .typical .intro { width: 340px; flex-shrink: 0; }
+  .typical .table { flex-grow: 1; }
+  .lineup { border-top: 0; }
+  .lineup-head { display: grid; grid-template-columns: 150px 1fr 60px 70px; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); font-family: var(--mono); font-size: 13px; text-align: right; }
+  .lu-row { grid-template-columns: 150px 1fr 60px 70px; grid-template-areas: "name icons avg range"; gap: 16px; align-items: center; }
+  .lu-name { font-size: 18px; }
+  .lu-stats { display: none; }
+  .lu-avg-col, .lu-range-col { display: block; text-align: right; }
+  .lu-avg-col { grid-area: avg; font-size: 16px; font-weight: 500; }
+  .lu-range-col { grid-area: range; font-size: 14px; }
+  .lu-icons { gap: 6px; flex-wrap: nowrap; }
+  .lu-icons svg { width: 34px; height: 19px; }
+
+  .legend { gap: 8px 24px; font-size: 15px; }
+  .legend i { width: 14px; height: 14px; }
+  .tubs { gap: 8px; }
+  .tub { grid-template-columns: 130px 1fr; grid-template-areas: "date bar"; gap: 16px; align-items: center; font-size: 14px; }
+  .tub .total { display: none; }
+  .tub .barline { display: flex; align-items: center; gap: 16px; }
+  .tub .barline .segs { height: 24px; width: calc(var(--n) / var(--max) * (100% - 40px)); }
+  .tub .barline .t2 { display: inline; font-weight: 500; font-size: 15px; }
+  .numbers { font-size: 13px; }
+
+  /*
+    Photo swapping, shared by the odd ones and the gallery. Every .swap-item
+    carries its own figure, lifted out into a viewer column; exactly one shows.
+    Which one, in order of precedence: the item under the mouse, else the item
+    with keyboard focus, else the item a #photo-N link points at, else the
+    default. No JavaScript. Touch screens have no hover, so below 700px none of
+    this applies.
+  */
+  .swap-item figure { display: flex; position: absolute; top: 0; opacity: 0; pointer-events: none; transition: opacity 120ms ease-in; }
+  .swap-item.is-default figure, .swap-item:target figure, .swap-item:hover figure, .swap-item:focus-within figure { opacity: 1; pointer-events: auto; }
+  .swap:has(.swap-item:hover) .swap-item:not(:hover) figure,
+  .swap:not(:has(.swap-item:hover)):has(.swap-item:focus-within) .swap-item:not(:focus-within) figure,
+  .swap:not(:has(.swap-item:hover, .swap-item:focus-within)):has(.swap-item:target) .swap-item:not(:target) figure { opacity: 0; pointer-events: none; }
+
+  /* The odd ones: photo column on the left, entries on the right. */
+  .odd { position: relative; display: block; padding-left: 484px; min-height: 610px; }
+  .odd > h2 { margin-bottom: 28px; }
+  .odd-entry, .odd-fact { flex-direction: row; gap: 24px; padding: 16px 0; }
+  .odd-entry .when, .odd-fact .when { width: 130px; flex-shrink: 0; font-size: 14px; padding-top: 3px; }
+  .odd-entry.lead { flex-direction: column; gap: 0; padding: 0 0 28px; font-size: 19px; }
+  .odd-entry figure { left: 0; width: 420px; }
+  .odd-entry:not(.lead):hover, .odd-entry:not(.lead):focus-within { background: color-mix(in srgb, var(--lilac) 18%, transparent); }
+
+  /* Every photo: the list down the left, the viewer on the right. */
+  .gallery { position: relative; display: block; min-height: 700px; }
+  .shot { display: block; width: 400px; border-top: 1px solid var(--rule); scroll-margin-top: 24px; }
+  .shot:last-child { border-bottom: 2px solid var(--ink); }
+  .shot-label { display: block; padding: 8px 12px; font-size: 14px; }
+  .shot-label:hover, .shot-label:focus-visible { text-decoration: none; }
+  .shot figure { left: 464px; right: 0; }
+  .shot .photo { width: 100%; max-height: 700px; object-fit: contain; object-position: left top; }
+  /* The row whose photo is showing: same precedence as the swap above. */
+  .shot:hover .shot-label,
+  .gallery:not(:has(.shot:hover)) .shot:focus-within .shot-label,
+  .gallery:not(:has(.shot:hover, .shot:focus-within)) .shot:target .shot-label,
+  .gallery:not(:has(.shot:hover, .shot:focus-within, .shot:target)) .shot.is-default .shot-label { background: color-mix(in srgb, var(--lilac) 28%, transparent); color: var(--ink); font-weight: 500; }
+
+  footer { margin-top: 120px; flex-direction: row; justify-content: space-between; align-items: flex-end; gap: 48px; padding: 40px 0 56px; }
+  footer p { font-size: 20px; max-width: 700px; }
+  footer .repo { font-size: 15px; padding: 0; }
+  footer .by { font-size: 13px; max-width: 320px; text-align: right; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .swap-item figure { transition: none; }
+}

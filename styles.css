@@ -153,7 +153,7 @@ figcaption { font-family: var(--mono); font-size: 12px; }
 .swap-input:checked + .swap-figure + .swap-label { background: color-mix(in srgb, var(--lilac) 28%, transparent); }
 .swap-input:focus-visible + .swap-figure + .swap-label { outline: 2px solid var(--ink); outline-offset: -2px; }
 /*
-  A #photo-N link (from "Every tub I've counted") shows that tub's photo, until
+  A #photo-N link (from the stacked chart) shows that tub's photo, until
   the reader picks a row of their own: it only outranks the untouched default.
 */
 .swap:has(.swap-input.is-default:checked):has(.swap-label:target) .swap-input:checked + .swap-figure { display: none; }

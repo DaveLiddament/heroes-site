@@ -161,13 +161,13 @@ figcaption { font-family: var(--mono); font-size: 12px; }
 .swap:has(.swap-input.is-default:checked):has(.swap-label:target) .swap-input:checked + .swap-figure + .swap-label { background: none; }
 .swap:has(.swap-input.is-default:checked) .swap-label:target { background: color-mix(in srgb, var(--lilac) 28%, transparent); }
 
-/* Oddities: a plain list. The photos live in "Every photo". */
+/* Oddities: a plain list. The photos live in the gallery. */
 .odd-entries { border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
 .odd-entry { display: flex; flex-direction: column; gap: 4px; padding: 14px 0; }
 .odd-entry + .odd-entry { border-top: 1px solid var(--rule); }
 .odd-entry .when { font-family: var(--mono); font-size: 12px; }
 
-/* Every photo: a row per tub. */
+/* The gallery: a row per tub. */
 .gallery { border-bottom: 2px solid var(--ink); }
 .shot-label { display: block; padding: 8px 12px; border-top: 1px solid var(--rule); font-family: var(--mono); font-size: 12px; }
 .gallery .swap-input:checked + .swap-figure + .shot-label { font-weight: 500; }
@@ -248,7 +248,7 @@ footer .by { font-family: var(--mono); font-size: 12px; }
   .odd-entry { flex-direction: row; gap: 24px; padding: 16px 0; }
   .odd-entry .when { width: 130px; flex-shrink: 0; font-size: 14px; padding-top: 3px; }
 
-  /* Every photo: the list down the left, the viewer on the right. */
+  /* The gallery: the list down the left, the viewer on the right. */
   .gallery { position: relative; min-height: 580px; border-bottom: 0; }
   .shot-label { width: 400px; font-size: 14px; }
   .shot-label:last-of-type { border-bottom: 2px solid var(--ink); }

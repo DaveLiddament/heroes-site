@@ -154,6 +154,11 @@ figcaption { font-family: var(--mono); font-size: 12px; }
 .shot-label:hover, .shot-label:focus-visible { text-decoration: underline; }
 .shot:target .shot-label { color: var(--accent); font-weight: 500; }
 
+/* 404: the empty wrappers from the social card. */
+.notfound .empties { display: flex; flex-wrap: wrap; gap: 10px; color: var(--lilac); }
+.notfound .empties svg { width: 52px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-dasharray: 3 2.4; stroke-linejoin: round; }
+.notfound-text { font-size: 19px; }
+
 /* Footer */
 footer { margin-top: 96px; padding: 32px 0 40px; border-top: 2px solid var(--ink); }
 footer .by { font-family: var(--mono); font-size: 12px; }
@@ -251,6 +256,10 @@ footer .by { font-family: var(--mono); font-size: 12px; }
   .gallery:not(:has(.shot:hover)) .shot:focus-within .shot-label,
   .gallery:not(:has(.shot:hover, .shot:focus-within)) .shot:target .shot-label,
   .gallery:not(:has(.shot:hover, .shot:focus-within, .shot:target)) .shot.is-default .shot-label { background: color-mix(in srgb, var(--lilac) 28%, transparent); color: var(--ink); font-weight: 500; }
+
+  .notfound .empties { gap: 16px; }
+  .notfound .empties svg { width: 88px; height: 48px; }
+  .notfound-text { font-size: 24px; }
 
   footer { margin-top: 120px; padding: 40px 0 56px; }
   footer .by { font-size: 14px; }
